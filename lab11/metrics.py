@@ -30,7 +30,26 @@ def min_ttc(R: core.Rollout, cap: float = 10.0) -> np.ndarray:
     Shapes: R.F is (K, NF, N, 7) with x, z, hx, hz, v, a, d; core.IX["ego"] is the ego's actor index.
     Vectorise over frames (a Python loop over 481 frames x K scenarios is too slow for Part C).
     """
-    raise NotImplementedError("TODO 1: min_ttc")
+    F = R.F
+    K, NF = F.shape[:2]
+    ei = core.IX["ego"]
+    ego = F[:, :, ei]
+    L = R.EGO[:, :, 3].astype(int)
+    has = L >= 0
+    j = np.where(has, L, 0)
+    lead = np.take_along_axis(F, j[:, :, None, None], axis=2)[:, :, 0]
+    lens = np.array([a.dims[0] for a in (R.actors or core.ACTORS)], dtype=float)
+    half = lens[j] / 2
+    lon = (lead[..., 0] - ego[..., 0]) * ego[..., 2] + (lead[..., 1] - ego[..., 1]) * ego[..., 3]
+    gap = np.maximum(lon - HALF_EGO - half, 0.0)
+    dv = ego[..., 4] - lead[..., 4]
+    ok = has & (dv > 0.1)
+    ttc = np.where(ok, gap / np.maximum(dv, 1e-6), np.inf)
+    out = np.minimum(cap, ttc.min(1))
+    for k in range(K):
+        if ego_events(R, k):
+            out[k] = 0.0
+    return out
 
 
 def contact_type(R: core.Rollout, k: int, event: dict) -> str:
@@ -39,13 +58,28 @@ def contact_type(R: core.Rollout, k: int, event: dict) -> str:
     Put the other actor in the ego's frame: lon = r . h, lat = -r_x h_z + r_z h_x with h = (hx, hz) of the ego.
     'front' if lon > 2.3 and |lat| < 1.6; 'rear' if lon < -2.3 and |lat| < 1.6; otherwise 'side'.
     """
-    raise NotImplementedError("TODO 2: contact_type")
+    other = event["b"] if event["a"] == "ego" else event["a"]
+    f = event["f"]
+    e = R.F[k, f, core.IX["ego"]]
+    o = R.F[k, f, R.ids.index(other)]
+    rx, rz = float(o[0] - e[0]), float(o[1] - e[1])
+    hx, hz = float(e[2]), float(e[3])
+    lon = rx * hx + rz * hz
+    lat = -rx * hz + rz * hx
+    if lon > HALF_EGO and abs(lat) < 1.6:
+        return "front"
+    if lon < -HALF_EGO and abs(lat) < 1.6:
+        return "rear"
+    return "side"
 
 
 def progress_metrics(R: core.Rollout) -> tuple[np.ndarray, np.ndarray]:
     """TODO 9. Two (K,) arrays: the distance the ego covers in the 24 s (sum of frame-to-frame steps, metres),
     and the number of frames where the ego brakes harder than 3 m/s^2 (acceleration column < -3)."""
-    raise NotImplementedError("TODO 9: progress_metrics")
+    pos = R.F[:, :, core.IX["ego"], :2].astype(float)
+    dist = np.sqrt((np.diff(pos, axis=1) ** 2).sum(-1)).sum(1)
+    hard = (R.F[:, :, core.IX["ego"], 5] < -3).sum(1)
+    return dist, hard
 
 
 # ---------------------------------------------------------------- given helpers
