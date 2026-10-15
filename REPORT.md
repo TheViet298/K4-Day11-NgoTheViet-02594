@@ -1,4 +1,4 @@
-MSSV: 202602594
+﻿MSSV: 202602594
 
 # Lab 11 · Scenario Forge — báo cáo
 
@@ -126,5 +126,5 @@ Ba điều mà xác suất bạn báo **không** nói, ví dụ: thế giới ch
   - P(lỗi planner | rắc rối) = 9.68e-02, Wilson [8.28e-02, 1.13e-01] (policy gốc).
   - tần suất mỗi chuyến = `0.01 * 9.68e-02 = 9.68e-04` (cận trên 1.13e-03). So với `estimate.json: bus_bypass.p` của 3 seed (2.26e-04, 1.25e-03, 4.15e-04, trung bình ~6.3e-04): cùng bậc độ lớn, cao hơn khoảng 1,5 lần so với trung bình. Vì `exposure` là ước lượng nên so sánh này chỉ mang tính tham khảo.
 - **Hình:** `evidence/shots/ch10_ped_collision.png` (chương 10: "Va chạm: xe ta và người băng ngang lúc 19,3 s").
-- **Bạn tự lái thì sao:** theo `mine.json: exact`, bạn tự lái không va chạm trong cảnh này (bạn đã xem lại cảnh nhiều lần, còn planner thì không). Bạn tránh được vì phanh sớm hơn planner: thấy người đi bộ ở mép đường là giảm tốc ngay, còn planner chỉ phản ứng khi người đã vào làn (145/146 va chạm là `avoidable`, tức phanh sớm là tránh được).
+- **Bạn tự lái thì sao:** theo `mine.json: exact`, tự lái không va chạm trong cảnh này. Tránh được vì phanh sớm hơn planner: thấy người đi bộ ở mép đường là giảm tốc ngay, còn planner chỉ phản ứng khi người đã vào làn (145/146 va chạm là `avoidable`, tức phanh sớm là tránh được).
 - **Cách sửa:** policy được chọn ở bước `fix` (`cutinLat = 3.0`) không giúp gì: 145 va chạm, bằng policy gốc, vì núm đó chỉ liên quan xe lấn làn. 145/146 va chạm là `avoidable` (phanh hết cỡ khi biết trước là tránh được), nên lỗi là planner phản ứng quá muộn, không phải bất khả kháng. Cần thêm logic: coi người đi bộ ở mép đường, hoặc đang bước vào làn, là mối nguy ở **mọi** vị trí, không chỉ gần vạch qua đường, rồi phanh theo thời gian-đến-va-chạm (TTC) với người đó. Chưa thử núm `pedBuffer` trong mục này, đó là núm đáng thử trước.
