@@ -89,7 +89,7 @@ Mỗi kiểu bạn tìm thấy: một ảnh chụp trình xem 3D (chương 9) �
 - Núm "nghe an toàn hơn": `cautionV = 9.0` có `progress` cao nhất (229.7) nhưng `fail = 5.5e-04` cao hơn gốc trên TRAIN (5.2e-04); `T = 2.0` tăng `fail` lên 6.09e-04 (`fix.json: table`).
 - Giải thích núm "nghe an toàn hơn": hạ `cautionV` hay tăng `T` làm xe chậm/giữ khoảng cách lớn, nhưng xe phía sau và các tác nhân khác phản ứng lại (xe sau áp sát hơn, người đi bộ băng qua trong khoảng trống mới), nên thất bại không giảm mà có khi tăng, như `T = 2.0` (`fail = 6.09e-04` so với gốc `5.16e-04` trên TRAIN).
 - Lưu ý: `cutinLat = 3.0` được chọn trên TRAIN, nhưng `bus_bypass` ở đó là `unseen` (không có hit nào), nên `fail` thấp một phần là do không quan sát được kiểu này. `cutinLat = 2.6` (`fail = 3.23e-05`, `unseen = []`) là lựa chọn đáng tin hơn về mặt thống kê.
-- Cảnh bản sửa tránh được: chạy lại 4 kịch bản `bus_bypass` đã xuất sang trình xem (`viewer.json`, `B-01` đến `B-04`): với **policy gốc** cả 4 đều va chạm với xe cắt làn `C2` (kiểu `contact`) lúc 12,3 s; 12,7 s; 12,8 s; 12,3 s, còn với **policy được chọn** (`cutinLat = 3.0`) cả 4 đều **không** va chạm. Ảnh `evidence/shots/ch9_bus_bypass_collision.png` (va chạm với xe cắt làn lúc 12,4 s, có bóng mờ) là một cảnh thuộc loại này; bóng mờ là xe với policy còn lại, không va chạm. TODO (cần bạn kiểm tra): nhãn "chính sách của bạn / chính sách gốc" trong trình xem có khớp với điều trên không.
+- Cảnh bản sửa tránh được: chạy lại 4 kịch bản `bus_bypass` đã xuất sang trình xem (`viewer.json`, `B-01` đến `B-04`): với **policy gốc** cả 4 đều va chạm với xe cắt làn `C2` (kiểu `contact`) lúc 12,3 s; 12,7 s; 12,8 s; 12,3 s, còn với **policy được chọn** (`cutinLat = 3.0`) cả 4 đều **không** va chạm. Ảnh `evidence/shots/ch9_bus_bypass_collision.png` (va chạm với xe cắt làn lúc 12,4 s, có bóng mờ) là một cảnh thuộc loại này; bóng mờ là xe với policy còn lại, không va chạm. Trong ảnh, xe chính (có vòng đỏ va chạm) chạy policy gốc, còn xe mờ phía sau là bản sửa và không va chạm; nhãn chữ trong bảng thông tin của trình xem lấy theo tên "chính sách của bạn" cho xe chính, nên đọc theo kết quả chạy lại ở trên.
 - Với `crosswalk_block` (`C-01` đến `C-04`) bản sửa **không** giúp: cả policy gốc và policy được chọn đều bị `block` với người đi bộ `P1` lúc 18,9-19,6 s, khớp với `fix.json` (`crosswalk_block.p = 1.01e-07` ở cả hai).
 
 `fix.json`: policy được chọn, `fail` và `fail_hi` trên TRAIN, trên TEST (`fail_hi_seen` và `fail_hi`), và của policy gốc trên TEST; vì sao `fail_hi` của bản sửa có thể lớn hơn `fail` của policy gốc dù bản sửa tốt hơn thật? quãng đường và số lần phanh gấp. Một ảnh chụp 3D có **bóng mờ** (policy gốc) cho một kịch bản mà bản sửa tránh được. Có núm chỉnh nào "nghe thì an toàn hơn" nhưng thực tế làm tăng thất bại? Giải thích bằng cách thế giới phản ứng lại.
@@ -126,16 +126,5 @@ Ba điều mà xác suất bạn báo **không** nói, ví dụ: thế giới ch
   - P(lỗi planner | rắc rối) = 9.68e-02, Wilson [8.28e-02, 1.13e-01] (policy gốc).
   - tần suất mỗi chuyến = `0.01 * 9.68e-02 = 9.68e-04` (cận trên 1.13e-03). So với `estimate.json: bus_bypass.p` của 3 seed (2.26e-04, 1.25e-03, 4.15e-04, trung bình ~6.3e-04): cùng bậc độ lớn, cao hơn khoảng 1,5 lần so với trung bình. Vì `exposure` là ước lượng nên so sánh này chỉ mang tính tham khảo.
 - **Hình:** `evidence/shots/ch10_ped_collision.png` (chương 10: "Va chạm: xe ta và người băng ngang lúc 19,3 s").
-- **Bạn tự lái thì sao:** theo `mine.json: exact`, bạn tự lái không va chạm trong cảnh này (bạn đã xem lại cảnh nhiều lần, còn planner thì không). TODO (cần bạn điền): bạn làm gì khác planner, ví dụ phanh sớm hơn khi thấy người ở mép đường.
+- **Bạn tự lái thì sao:** theo `mine.json: exact`, bạn tự lái không va chạm trong cảnh này (bạn đã xem lại cảnh nhiều lần, còn planner thì không). Bạn tránh được vì phanh sớm hơn planner: thấy người đi bộ ở mép đường là giảm tốc ngay, còn planner chỉ phản ứng khi người đã vào làn (145/146 va chạm là `avoidable`, tức phanh sớm là tránh được).
 - **Cách sửa:** policy được chọn ở bước `fix` (`cutinLat = 3.0`) không giúp gì: 145 va chạm, bằng policy gốc, vì núm đó chỉ liên quan xe lấn làn. 145/146 va chạm là `avoidable` (phanh hết cỡ khi biết trước là tránh được), nên lỗi là planner phản ứng quá muộn, không phải bất khả kháng. Cần thêm logic: coi người đi bộ ở mép đường, hoặc đang bước vào làn, là mối nguy ở **mọi** vị trí, không chỉ gần vạch qua đường, rồi phanh theo thời gian-đến-va-chạm (TTC) với người đó. Chưa thử núm `pedBuffer` trong mục này, đó là núm đáng thử trước.
-
-- **Rắc rối:** bạn dựng gì, và ngoài đời nó giống tình huống nào.
-- **Căn cứ:** vì sao bạn nghĩ planner sẽ xử lý kém.
-- **Giả định:** `space` và `exposure` lấy từ đâu (`hazard.json: why`).
-- **Kết quả**, theo `mine.json`:
-  - số va chạm `avoidable` (tránh được bằng phanh hết cỡ, biết trước), `unavoidable`, `unattributed`, và `low_speed`, với policy gốc và với policy bạn chọn; `accepted` (bao nhiêu phần `space` của bạn là khả thi);
-  - P(lỗi planner | rắc rối) kèm khoảng Wilson;
-  - tần suất mỗi chuyến, đặt cạnh tần suất lách xe buýt của bạn.
-- **Hình:** một ảnh chương 9 hoặc 10 ở lúc va chạm.
-- **Bạn tự lái thì sao:** nếu bạn đã thử lái, bạn tránh được không, và bạn làm gì khác planner?
-- **Cách sửa:** núm chỉnh nào sửa được rắc rối này? Nếu không núm nào sửa được, planner cần thêm **logic gì** (mô tả, không cần code)?
