@@ -115,18 +115,18 @@ Ba điều mà xác suất bạn báo **không** nói, ví dụ: thế giới ch
 ## 9. Rắc rối của bạn (bước G + chương 10)
 
 **Trả lời (từ `hazard.json` và `mine.json`):**
-- **Rắc rối:** một xe đạp lạng ngang sang làn xe ta (`hazards[0]`: `type = bike`, `x = 200`, `swerve = 1.6`, `trig = 25`). Ngoài đời giống người đạp xe tránh ổ gà hoặc xe đỗ ở mép đường rồi lạng vào làn.
-- **Căn cứ:** xe đạp lạng vào làn ở khoảng cách ngắn là tình huống planner dựa trên IDM không dự đoán trước được. Thực tế kết quả không ủng hộ giả thuyết này (xem bên dưới).
-- **Giả định:** `space` (`h0_x` 100-260, `h0_swerve` 1.0-2.5, `h0_trig` 15-35) và `exposure = 0.05` lần/chuyến lấy từ ước lượng của tôi, chưa có số đo (`hazard.json: why`). Cần thay bằng đếm từ video/dashcam.
+- **Rắc rối:** người đi bộ chạy băng ngang đường ở chỗ không có vạch (`hazard.json: hazards[0]`: `type = ped`, `x = 150`, `v = 2.5`, `trig = 30`). Ngoài đời giống người vội băng qua đường ở đô thị mà không dùng vạch qua đường.
+- **Căn cứ:** planner chỉ thận trọng gần vạch qua đường bị che (`cautionV`, `cautionRange`), nên người bước ra ở chỗ không có vạch lại không nằm trong vùng đó. Kết quả xác nhận: planner gốc đâm vào người đi bộ (`mine.json: exact.planner = [ego, H0, 19.25 s]`).
+- **Giả định:** `space` (`h0_x` 120-200, `h0_v` 1.8-2.5, `h0_trig` 20-40) và `exposure = 0.01` lần/chuyến là ước lượng của tôi, chưa có số đo (`hazard.json: why`). Cần thay bằng đếm từ video camera trên đoạn đường tương tự.
 - **Kết quả**, theo `mine.json`:
-  - cảnh dựng trong trình xem: planner không va chạm, bạn tự lái cũng không va chạm.
-  - `accepted`: 1438/1500 phiên bản khả thi (96 %).
-  - policy gốc: 1 va chạm: `avoidable = 0`, `unavoidable = 0`, `unattributed = 1`, `low_speed = 0`. Policy được chọn: 0 va chạm.
-  - P(lỗi planner | rắc rối) = 0.00e+00, khoảng Wilson [0, 2.87e-03] (cả policy gốc và policy được chọn).
-  - tần suất mỗi chuyến = 0 (cận trên 1.44e-04) với `exposure = 0.05`. So với `estimate.json` thì `bus_bypass` có `p` cỡ 2e-04 đến 1e-03: cận trên của rắc rối này cùng bậc với lách xe buýt, nên chưa kết luận được rắc rối nào hiếm hơn.
-- **Hình:** TODO (cần bạn làm): ảnh chương 9 hoặc 10 vào `evidence/shots/`. Lưu ý planner không va chạm trong cảnh này, nên hãy chụp lúc suýt va chạm hoặc lúc xe đạp lạng ra.
-- **Bạn tự lái thì sao:** TODO (cần bạn điền): tránh được không (`mine.json` ghi bạn không va chạm), và bạn làm gì khác planner (phanh sớm hơn, đánh lái, hay giữ nguyên).
-- **Cách sửa:** rắc rối này chưa làm planner thất bại trong 1500 lần quét nên chưa có núm cần sửa. Nếu muốn tìm lỗi thật, cần dựng rắc rối khó hơn (ví dụ `trig` ngắn hơn hoặc thêm xe phía trước phanh cùng lúc).
+  - `accepted = 1498/1500` (100 %) phiên bản khả thi.
+  - policy gốc: 146 va chạm = `avoidable 145` + `unavoidable 0` + `unattributed 1` (`low_speed = 0`).
+  - policy được chọn (`cutinLat = 3.0`): 145 va chạm = `avoidable 145` + `unavoidable 0` + `unattributed 0` (`low_speed = 0`).
+  - P(lỗi planner | rắc rối) = 9.68e-02, Wilson [8.28e-02, 1.13e-01] (policy gốc).
+  - tần suất mỗi chuyến = `0.01 * 9.68e-02 = 9.68e-04` (cận trên 1.13e-03). So với `estimate.json: bus_bypass.p` của 3 seed (2.26e-04, 1.25e-03, 4.15e-04, trung bình ~6.3e-04): cùng bậc độ lớn, cao hơn khoảng 1,5 lần so với trung bình. Vì `exposure` là ước lượng nên so sánh này chỉ mang tính tham khảo.
+- **Hình:** `evidence/shots/ch10_ped_collision.png` (chương 10: "Va chạm: xe ta và người băng ngang lúc 19,3 s").
+- **Bạn tự lái thì sao:** theo `mine.json: exact`, bạn tự lái không va chạm trong cảnh này (bạn đã xem lại cảnh nhiều lần, còn planner thì không). TODO (cần bạn điền): bạn làm gì khác planner, ví dụ phanh sớm hơn khi thấy người ở mép đường.
+- **Cách sửa:** policy được chọn ở bước `fix` (`cutinLat = 3.0`) không giúp gì: 145 va chạm, bằng policy gốc, vì núm đó chỉ liên quan xe lấn làn. 145/146 va chạm là `avoidable` (phanh hết cỡ khi biết trước là tránh được), nên lỗi là planner phản ứng quá muộn, không phải bất khả kháng. Cần thêm logic: coi người đi bộ ở mép đường, hoặc đang bước vào làn, là mối nguy ở **mọi** vị trí, không chỉ gần vạch qua đường, rồi phanh theo thời gian-đến-va-chạm (TTC) với người đó. Chưa thử núm `pedBuffer` trong mục này, đó là núm đáng thử trước.
 
 - **Rắc rối:** bạn dựng gì, và ngoài đời nó giống tình huống nào.
 - **Căn cứ:** vì sao bạn nghĩ planner sẽ xử lý kém.
