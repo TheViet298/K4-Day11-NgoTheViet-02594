@@ -73,7 +73,8 @@ Mỗi kiểu bạn tìm thấy: một ảnh chụp trình xem 3D (chương 9) �
 - Các cuộc săn trong `hunt.json: found`: `bus_bypass` -> `{bus_bypass: 168}`; `cut_in` -> `{bus_bypass: 13}`; `crosswalk_block` -> `{crosswalk_block: 15}`; `rear_ended` -> `{bus_bypass: 5, crosswalk_block: 5}`.
 - Tìm thấy 2 kiểu: `bus_bypass` và `crosswalk_block`. **Không** tìm thấy `cut_in` và `rear_ended`: cuộc săn của chúng chỉ ra các kiểu khác. `estimate.json` cũng cho `hits = 0` ở hai kiểu này với cả 3 seed (`upper_zero_hits = 0.025`), nên mức tin cậy chỉ là "không thấy với ngân sách 600 mẫu/seed", không phải bằng chứng là chúng không tồn tại.
 - Nếu chỉ chạy một cuộc săn chung thì kết quả thiên về kiểu dễ nhất (`bus_bypass` chiếm 168 kết quả, gấp hơn 10 lần `crosswalk_block`), các kiểu hiếm bị che mất.
-- TODO (cần bạn làm): ảnh chụp 3D ở lúc va chạm cho `bus_bypass` và `crosswalk_block`, cùng một câu mô tả chuỗi sự kiện cho mỗi kiểu (`evidence/shots/`).
+- `bus_bypass`: ảnh `evidence/shots/ch9_bus_bypass_collision.png` (chương 9, "Va chạm: xe ta và xe cắt làn lúc 12,4 s"). Chuỗi sự kiện: đường ướt (μ 0,5), xe ta lách qua xe buýt đang đỗ ở điểm dừng; xe cắt làn (xe tím) chen vào với khe chấp nhận chỉ 6,4 m ngay sau xe buýt, xe ta phanh không kịp nên đâm vào nó. Người đi bộ ở vạch qua đường có ngó qua xe buýt, nên xe ta cũng bị chậm lại vì lý do khác.
+- TODO (cần bạn làm): ảnh va chạm cho `crosswalk_block` và một câu mô tả chuỗi sự kiện của nó.
 
 ## 6. Sửa planner (bước E + 3D)
 
@@ -87,6 +88,7 @@ Mỗi kiểu bạn tìm thấy: một ảnh chụp trình xem 3D (chương 9) �
 - Núm "nghe an toàn hơn": `cautionV = 9.0` có `progress` cao nhất (229.7) nhưng `fail = 5.5e-04` cao hơn gốc trên TRAIN (5.2e-04); `T = 2.0` tăng `fail` lên 6.09e-04 (`fix.json: table`).
 - Giải thích núm "nghe an toàn hơn": hạ `cautionV` hay tăng `T` làm xe chậm/giữ khoảng cách lớn, nhưng xe phía sau và các tác nhân khác phản ứng lại (xe sau áp sát hơn, người đi bộ băng qua trong khoảng trống mới), nên thất bại không giảm mà có khi tăng, như `T = 2.0` (`fail = 6.09e-04` so với gốc `5.16e-04` trên TRAIN).
 - Lưu ý: `cutinLat = 3.0` được chọn trên TRAIN, nhưng `bus_bypass` ở đó là `unseen` (không có hit nào), nên `fail` thấp một phần là do không quan sát được kiểu này. `cutinLat = 2.6` (`fail = 3.23e-05`, `unseen = []`) là lựa chọn đáng tin hơn về mặt thống kê.
+- Cảnh báo về ảnh `evidence/shots/ch9_bus_bypass_collision.png`: ảnh có bóng mờ, nhưng trong cảnh này "chính sách của bạn" **va chạm** còn "chính sách gốc" **không va chạm**, tức là ngược với điều mục này cần chứng minh (bản sửa tránh được còn bản gốc thì không). Ảnh vẫn dùng được làm bằng chứng cho mục 5, nhưng cho mục 6 cần chụp thêm một cảnh mà bản sửa tránh được và bóng mờ (policy gốc) va chạm. Cảnh này còn gợi ý bản sửa `cutinLat = 3.0` có thể kém hơn policy gốc ở `bus_bypass` (kiểu `unseen` khi chọn).
 - TODO (cần bạn làm): ảnh chụp 3D có bóng mờ cho một kịch bản mà bản sửa tránh được, lưu vào `evidence/shots/`.
 
 `fix.json`: policy được chọn, `fail` và `fail_hi` trên TRAIN, trên TEST (`fail_hi_seen` và `fail_hi`), và của policy gốc trên TEST; vì sao `fail_hi` của bản sửa có thể lớn hơn `fail` của policy gốc dù bản sửa tốt hơn thật? quãng đường và số lần phanh gấp. Một ảnh chụp 3D có **bóng mờ** (policy gốc) cho một kịch bản mà bản sửa tránh được. Có núm chỉnh nào "nghe thì an toàn hơn" nhưng thực tế làm tăng thất bại? Giải thích bằng cách thế giới phản ứng lại.
