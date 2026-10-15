@@ -75,7 +75,7 @@ Mỗi kiểu bạn tìm thấy: một ảnh chụp trình xem 3D (chương 9) �
 - Nếu chỉ chạy một cuộc săn chung thì kết quả thiên về kiểu dễ nhất (`bus_bypass` chiếm 168 kết quả, gấp hơn 10 lần `crosswalk_block`), các kiểu hiếm bị che mất.
 - `bus_bypass`: ảnh `evidence/shots/ch9_bus_bypass_collision.png` (chương 9, "Va chạm: xe ta và xe cắt làn lúc 12,4 s"). Chuỗi sự kiện: đường ướt (μ 0,5), xe ta lách qua xe buýt đang đỗ ở điểm dừng; xe cắt làn (xe tím) chen vào với khe chấp nhận chỉ 6,4 m ngay sau xe buýt, xe ta phanh không kịp nên đâm vào nó. Người đi bộ ở vạch qua đường có ngó qua xe buýt, nên xe ta cũng bị chậm lại vì lý do khác.
 - `crosswalk_block`: chuỗi sự kiện (chạy lại `C-01` đến `C-04` từ `viewer.json`): sự kiện là `block` với người đi bộ `P1` lúc 18,9-19,6 s, không phải va chạm. Người đi bộ bước ra từ sau xe buýt đỗ, xe ta chỉ thấy khi đã gần vạch nên phanh muộn và dừng với thân xe nằm trên vạch qua đường, chắn lối người đang qua (README: kiểu `crosswalk_block` là planner phanh quá muộn).
-- TODO (cần bạn làm): ảnh chụp trình xem ở chương 9 cho kịch bản `C-01` tại khoảng 19,5 s, lưu vào `evidence/shots/`.
+- Ảnh `crosswalk_block`: `evidence/shots/ch9_crosswalk_block_C01.png` (chương 9, kịch bản `C-01`, 19,5 s, nhãn "chặn lối": xe ta đã dừng nhưng thân xe nằm trên vạch qua đường, người đi bộ bị chắn lối).
 
 ## 6. Sửa planner (bước E + 3D)
 
