@@ -1,4 +1,4 @@
-﻿MSSV: 202602594
+MSSV: 202602594
 
 # Lab 11 · Scenario Forge — báo cáo
 
