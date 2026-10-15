@@ -112,7 +112,19 @@ Ba điều mà xác suất bạn báo **không** nói, ví dụ: thế giới ch
 
 ## 9. Rắc rối của bạn (bước G + chương 10)
 
-**TODO (cần bạn làm, không thể làm bằng dòng lệnh):** mục này cần bạn dựng rắc rối trong trình xem 3D (chương 10), tải `hazard.json`, thêm tay ba trường (`why`, `space`, `exposure`), chạy `python run_all.py mine hazard.json`, rồi trích số từ `mine.json` vào các gạch đầu dòng dưới đây. Hiện chưa có `hazard.json`, `mine.json` và ảnh chụp.
+**Trả lời (từ `hazard.json` và `mine.json`):**
+- **Rắc rối:** một xe đạp lạng ngang sang làn xe ta (`hazards[0]`: `type = bike`, `x = 200`, `swerve = 1.6`, `trig = 25`). Ngoài đời giống người đạp xe tránh ổ gà hoặc xe đỗ ở mép đường rồi lạng vào làn.
+- **Căn cứ:** xe đạp lạng vào làn ở khoảng cách ngắn là tình huống planner dựa trên IDM không dự đoán trước được. Thực tế kết quả không ủng hộ giả thuyết này (xem bên dưới).
+- **Giả định:** `space` (`h0_x` 100-260, `h0_swerve` 1.0-2.5, `h0_trig` 15-35) và `exposure = 0.05` lần/chuyến lấy từ ước lượng của tôi, chưa có số đo (`hazard.json: why`). Cần thay bằng đếm từ video/dashcam.
+- **Kết quả**, theo `mine.json`:
+  - cảnh dựng trong trình xem: planner không va chạm, bạn tự lái cũng không va chạm.
+  - `accepted`: 1438/1500 phiên bản khả thi (96 %).
+  - policy gốc: 1 va chạm: `avoidable = 0`, `unavoidable = 0`, `unattributed = 1`, `low_speed = 0`. Policy được chọn: 0 va chạm.
+  - P(lỗi planner | rắc rối) = 0.00e+00, khoảng Wilson [0, 2.87e-03] (cả policy gốc và policy được chọn).
+  - tần suất mỗi chuyến = 0 (cận trên 1.44e-04) với `exposure = 0.05`. So với `estimate.json` thì `bus_bypass` có `p` cỡ 2e-04 đến 1e-03: cận trên của rắc rối này cùng bậc với lách xe buýt, nên chưa kết luận được rắc rối nào hiếm hơn.
+- **Hình:** TODO (cần bạn làm): ảnh chương 9 hoặc 10 vào `evidence/shots/`. Lưu ý planner không va chạm trong cảnh này, nên hãy chụp lúc suýt va chạm hoặc lúc xe đạp lạng ra.
+- **Bạn tự lái thì sao:** TODO (cần bạn điền): tránh được không (`mine.json` ghi bạn không va chạm), và bạn làm gì khác planner (phanh sớm hơn, đánh lái, hay giữ nguyên).
+- **Cách sửa:** rắc rối này chưa làm planner thất bại trong 1500 lần quét nên chưa có núm cần sửa. Nếu muốn tìm lỗi thật, cần dựng rắc rối khó hơn (ví dụ `trig` ngắn hơn hoặc thêm xe phía trước phanh cùng lúc).
 
 - **Rắc rối:** bạn dựng gì, và ngoài đời nó giống tình huống nào.
 - **Căn cứ:** vì sao bạn nghĩ planner sẽ xử lý kém.
